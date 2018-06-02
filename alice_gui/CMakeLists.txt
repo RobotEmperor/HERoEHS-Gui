@@ -16,6 +16,7 @@ roscpp
 roslib
 offset_tuner_msgs
 alice_msgs
+alice_walking_module_msgs
 )
 
 set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${CATKIN_DEVEL_PREFIX}/lib/pkgconfig")

@@ -29,8 +29,8 @@ namespace alice {
  *****************************************************************************/
 
 QNode::QNode(int argc, char** argv ) :
-															init_argc(argc),
-															init_argv(argv)
+																					init_argc(argc),
+																					init_argv(argv)
 {
 	currentForceX_l_gui = 0;
 	currentForceY_l_gui = 0;
@@ -45,6 +45,8 @@ QNode::QNode(int argc, char** argv ) :
 	currentTorqueX_r_gui = 0;
 	currentTorqueY_r_gui = 0;
 	currentTorqueZ_r_gui = 0;
+
+	ft_init_done_check = false;
 }
 
 QNode::~QNode() {
@@ -89,18 +91,40 @@ bool QNode::init() {
 	foot_step_command_pub = n.advertise<alice_foot_step_generator::FootStepCommand>("/heroehs/alice_foot_step_generator/walking_command",10);
 	module_on_off = n.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 10);
 
+	set_balance_param_client =  n.serviceClient<alice_walking_module_msgs::SetBalanceParam>("/heroehs/online_walking/balance_param");
+	joint_feedback_gain_client = n.serviceClient<alice_walking_module_msgs::SetJointFeedBackGain>("/heroehs/online_walking/joint_feedback_gain");
+
 
 	/*****************************************************************************
 	 ** Module on off
 	 *****************************************************************************/
 
+	// sensor initialize button & completed signal detect
+	alice_ft_init_pub = n.advertise<std_msgs::Bool>("/alice/ft_init",10);
+	alice_ft_init_done_sub = n.subscribe("/alice/ft_init_done", 10, &QNode::aliceFtInitDoneMsgCallback, this);
+
+	// desired pose
+	desired_pose_waist_pub = n.advertise<std_msgs::Float64MultiArray>("/desired_pose_waist",10);
+	desired_pose_head_pub = n.advertise<std_msgs::Float64MultiArray>("/desired_pose_head",10);
+	desired_pose_arm_pub = n.advertise<std_msgs::Float64MultiArray>("/desired_pose_arm",10);
+
+	/*****************************************************************************
+	 ** control on off
+	 *****************************************************************************/
+	//balance on off
+	alice_balance_parameter_pub = n.advertise<alice_msgs::BalanceParam>("/alice/balance_parameter",10);
+
+	//ball tracking
+	ball_tracking_pub =  n.advertise<std_msgs::Float64MultiArray>("/ball_param",10);
 
 
 	/*****************************************************************************
 	 ** graph
 	 *****************************************************************************/
 
-	alice_force_torque_data_sub = n.subscribe("/alice/force_torque_data", 10, &QNode::forceTorqueDataMsgCallback, this);
+	zmp_fz_sub = n.subscribe("/zmp_fz", 10, &QNode::zmpFzMsgCallback, this);
+
+	alice_force_torque_data_sub = n.subscribe("/alice/force_torque_data", 10, &QNode::forceTorqueDataMsgCallback, this);/////////////
 	joint_goal_state_sub        = n.subscribe("/robotis/goal_joint_states", 10, &QNode::goalJointStateMsgCallback, this);
 	joint_present_state_sub     = n.subscribe("/robotis/present_joint_states", 10, &QNode::presentJointStateMsgCallback, this);
 
@@ -204,6 +228,17 @@ void QNode::presentJointStateMsgCallback(const sensor_msgs::JointState::ConstPtr
 	}
 
 
+}
+void QNode::aliceFtInitDoneMsgCallback(const std_msgs::Bool::ConstPtr& msg)
+{
+	ft_init_done_check = msg->data;
+}
+void QNode::zmpFzMsgCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
+{
+	current_zmp_fz_x   = (double) msg->data[0];
+	current_zmp_fz_y   = (double) msg->data[1];
+	reference_zmp_fz_x = (double) msg->data[2];
+	reference_zmp_fz_y = (double) msg->data[3];
 }
 
 

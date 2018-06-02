@@ -36,10 +36,14 @@
 #include "offset_tuner_msgs/PresentJointStateArray.h"
 #include "alice_foot_step_generator/FootStepCommand.h"
 #include "alice_msgs/ForceTorque.h"
+#include "alice_msgs/BalanceParam.h"
+#include "alice_walking_module_msgs/SetBalanceParam.h"
+#include "alice_walking_module_msgs/SetJointFeedBackGain.h"
 
 
 #include "std_msgs/String.h"
 #include "std_msgs/Bool.h"
+#include "std_msgs/Float64MultiArray.h"
 #include "sensor_msgs/JointState.h"
 /*****************************************************************************
  ** Namespaces
@@ -82,6 +86,9 @@ public:
 	ros::Publisher command_state_pub;
 	ros::Publisher enable_module_pub;
 
+	//test
+	ros::Publisher ball_tracking_pub;
+
 
 	//subscriber
 	ros::Subscriber moving_state_sub;
@@ -107,17 +114,33 @@ public:
 	 ** walking test
 	 *****************************************************************************/
 	ros::Publisher foot_step_command_pub;
-	//ros::ServiceClient set_balance_param_client;
-	//ros::ServiceClient joint_feedback_gain_client;
+	ros::ServiceClient set_balance_param_client;
+	ros::ServiceClient joint_feedback_gain_client;
 
-	ros::Publisher module_on_off; // 모듈 on off
 
 	/*****************************************************************************
 	 ** module on off
 	 *****************************************************************************/
-
+	ros::Publisher module_on_off; // 모듈 on off
 	ros::Publisher init_pose_pub;
 	std_msgs::String init_pose_msg;
+	ros::Publisher alice_ft_init_pub;
+	ros::Subscriber alice_ft_init_done_sub;
+	void aliceFtInitDoneMsgCallback(const std_msgs::Bool::ConstPtr& msg);
+	bool ft_init_done_check;
+
+	/*****************************************************************************
+	 **desired pose
+	 *****************************************************************************/
+	ros::Publisher desired_pose_waist_pub;
+	ros::Publisher desired_pose_head_pub;
+	ros::Publisher desired_pose_arm_pub;
+
+
+	/*****************************************************************************
+	 ** control
+	 *****************************************************************************/
+	ros::Publisher alice_balance_parameter_pub;
 
 	/*****************************************************************************
 	 ** graph
@@ -126,10 +149,18 @@ public:
 	ros::Subscriber joint_goal_state_sub;
 	ros::Subscriber joint_present_state_sub;
 	ros::Subscriber alice_force_torque_data_sub;
+	ros::Subscriber zmp_fz_sub;
+
+
+
+
 	double currentForceX_l_gui, currentForceY_l_gui, currentForceZ_l_gui;
 	double currentForceX_r_gui, currentForceY_r_gui, currentForceZ_r_gui;
 	double currentTorqueX_l_gui, currentTorqueY_l_gui, currentTorqueZ_l_gui;
 	double currentTorqueX_r_gui, currentTorqueY_r_gui, currentTorqueZ_r_gui;
+
+	double current_zmp_fz_x, current_zmp_fz_y;
+	double reference_zmp_fz_x, reference_zmp_fz_y;
 
 	std::map<int, std::string>      joint_index_to_name;
 	std::map<std::string, double>   joint_name_to_goal;
@@ -151,6 +182,7 @@ private:
 	void forceTorqueDataMsgCallback(const alice_msgs::ForceTorque::ConstPtr& msg);
 	void goalJointStateMsgCallback(const sensor_msgs::JointState::ConstPtr& msg);
 	void presentJointStateMsgCallback(const sensor_msgs::JointState::ConstPtr& msg);
+	void zmpFzMsgCallback(const std_msgs::Float64MultiArray::ConstPtr& msg);
 };
 
 }  // namespace offset_tuner_operation

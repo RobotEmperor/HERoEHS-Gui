@@ -42,6 +42,17 @@ void MainWindow::realtimeDataSlot()
 	graph_draw_clean(ui.state_plot);
 	graph_draw_clean(ui.sensor_plot_1);
 	graph_draw_clean(ui.sensor_plot_2);
+
+	if(qnode.ft_init_done_check)
+	{
+		temp_check_state = "FT Sensor Initialize Completed";
+		ui.sensor_state->setText(temp_check_state);
+	}
+	else
+	{
+		temp_check_state = "Need to initialize";
+		ui.sensor_state->setText(temp_check_state);
+	}
 }
 void MainWindow::graph_draw_sensor(QCustomPlot *ui_graph, const QString title, const QString unit, int min_value, int max_value, int tick_count)
 {
@@ -160,7 +171,21 @@ void MainWindow::check_sensor_menu()
 }
 void MainWindow::select_joint_state()
 {
-    graph_draw_update(ui.state_plot, qnode.joint_name_to_present[ui.state_combo_box->currentText().toStdString()], qnode.joint_name_to_goal[ui.state_combo_box->currentText().toStdString()], 0);
+	if(ui.mode_select_combo_box->currentText() == "Joint State")
+	{
+		ui.state_plot->yAxis->setLabel("Rad");
+		graph_draw_update(ui.state_plot, qnode.joint_name_to_present[ui.state_combo_box->currentText().toStdString()], qnode.joint_name_to_goal[ui.state_combo_box->currentText().toStdString()], 0);
+	}
+	if(ui.mode_select_combo_box->currentText() == "ZMP_Y")
+	{
+		ui.state_plot->yAxis->setLabel("m");
+		graph_draw_update(ui.state_plot, qnode.current_zmp_fz_y, qnode.reference_zmp_fz_y, 0);
+	}
+	if(ui.mode_select_combo_box->currentText() == "ZMP_X")
+	{
+		ui.state_plot->yAxis->setLabel("m");
+		graph_draw_update(ui.state_plot, qnode.current_zmp_fz_x, qnode.reference_zmp_fz_x, 0);
+	}
 }
 
 void MainWindow::on_stop_button_clicked()

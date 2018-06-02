@@ -86,10 +86,32 @@ public:
 	void on_stop_clicked();
 	//parameter
 	void on_apply_data_clicked();
+	void on_joint_feedback_gain_clicked();
+	void on_balance_param_apply_clicked();
 
 	//<------------------------------------------------------------------- module on off -->
+	//<------------------------------------------------------------------- base_module-->
 	void on_base_module_real_button_clicked();
 	void on_initial_pose_real_button_clicked();
+	void on_initialize_ft_sensor_button_clicked();
+	//<------------------------------------------------------------------- leg_module-->
+	void on_alice_leg_module_button_clicked();
+
+	//<------------------------------------------------------------------- upper_body_module-->
+	void on_upper_body_module_button_clicked();
+	void on_waist_change_button_clicked();
+	void on_head_change_button_clicked();
+
+	//<------------------------------------------------------------------- arm_body_module-->
+	void on_arm_module_button_clicked();
+	void on_arm_change_end_effector_button_clicked();
+
+	//<------------------------------------------------------------------- control on off-->
+	void on_zmp_on_clicked();
+	void on_zmp_off_clicked();
+
+	void on_tracking_on_clicked();
+	void on_tracking_off_clicked();
 
 	//<------------------------------------------------------------------- graph -->
 	void on_stop_button_clicked();
@@ -107,6 +129,7 @@ public:
 	QFont legendFont;
 	double key;
 
+
 	// <------------------------------------------------------------------- dynamixel offset -->
 
 	std::map<std::string, int> joint_name_to_id;
@@ -120,11 +143,46 @@ public:
 	//<------------------------------------------------------------------- walking test -->
 
 	alice_foot_step_generator::FootStepCommand foot_step_command_msg;
+	alice_walking_module_msgs::SetBalanceParam set_balance_param_msg;
+	alice_walking_module_msgs::SetJointFeedBackGain joint_feedback_gain_msg;
 
 	int pose_num;
 
 
-	//<------------------------------------------------------------------- module on off -->
+
+
+	//<------------------------------------------------------------------- module -->
+	//<------------------------------------------------------------------- base_module-->
+	std_msgs::Bool ft_init_msg;
+	QString temp_check_state;
+
+	//<------------------------------------------------------------------- leg_module-->
+
+
+	//<------------------------------------------------------------------- desired_pose-->
+	std_msgs::Float64MultiArray desired_pose_waist_msg; // desired_pose command msg
+	std_msgs::Float64MultiArray desired_pose_head_msg; // desired_pose command msg
+	std_msgs::Float64MultiArray desired_pose_arm_msg; // desired_pose command msg
+
+	//<------------------------------------------------------------------- control -->
+	void parse_gain_data();
+	alice_msgs::BalanceParam alice_balance_parameter_msg;
+	double foot_zmpFz_p_gain;
+	double foot_zmpFz_d_gain;
+	double updating_duration;
+
+	double cob_x_offset_m;
+	double cob_y_offset_m;
+
+	double foot_roll_gyro_p_gain;
+	double foot_roll_gyro_d_gain;
+	double foot_pitch_gyro_p_gain;
+	double foot_pitch_gyro_d_gain;
+
+	//ball tracking
+	void parse_gain_tracking_data();
+	std_msgs::Float64MultiArray tracking_param_msg;
+
 	//<------------------------------------------------------------------- graph -->
 	void check_sensor_menu();
 	void select_joint_state();
